@@ -3,16 +3,9 @@
 // @description  Adds a menu with mod-only quick actions in post sidebar
 // @homepage     https://github.com/blackgreen100/minimal-additional-mod-actions
 // @author       Samuel Liew (first version), blackgreen (fork)
-// @version      6.0.0
+// @version      6.1.0
 //
 // @match        https://*.stackoverflow.com/*
-// @match        https://*.serverfault.com/*
-// @match        https://*.superuser.com/*
-// @match        https://*.askubuntu.com/*
-// @match        https://*.mathoverflow.net/*
-// @match        https://*.stackapps.com/*
-// @match        https://*.stackexchange.com/*
-// @match        https://stackoverflowteams.com/*
 //
 // @exclude      https://api.stackexchange.com/*
 // @exclude      https://data.stackexchange.com/*
@@ -310,9 +303,8 @@ async function promptToNukePostAndUser(pid, isQuestion, isDeleted, uid, uName, s
  * UI functions
  */
 function addPostModMenuLinks() {
-
-    // Append link to post sidebar if it doesn't exist yet
-    $('.question, .answer').find('.js-voting-container').not('.js-post-mod-menu-init').addClass('js-post-mod-menu-init').each(function () {
+    let isStagingGround = false
+    const f = function() {
         const post = $(this).closest('.question, .answer');
         // const postStatusEl = post.find('.js-post-notice, .special-status, .question-status');
         // const postStatus = postStatusEl.text().toLowerCase();
@@ -321,7 +313,7 @@ function addPostModMenuLinks() {
         // const isDeleted = post.hasClass('deleted-answer');
         // const isOldDupe = isQuestion && post.find('.js-post-body blockquote').first().find('strong').text().includes('Possible Duplicate');
         const pid = post.attr('data-questionid') || post.attr('data-answerid');
-        const userdetails = post.find('.post-layout .user-info:last .user-details');
+        const userdetails = isStagingGround ? post.find('.user-info:last .user-details') :  post.find('.post-layout .user-info:last .user-details');
         const userlink = userdetails.find('a').first();
         const uid = getUserId(userlink.attr('href'));
         const userRep = userdetails.find('.reputation-score').text();
@@ -368,7 +360,15 @@ function addPostModMenuLinks() {
         ${menuitems}
         </div>
       </div>`);
-    });
+    }
+
+    if(window.location.pathname.includes('staging-ground')) {
+        isStagingGround = true
+        $('.question').find('.js-meta-info').not('.js-post-mod-menu-init').addClass('js-post-mod-menu-init').each(f);
+    } else {
+        // Append link to post sidebar if it doesn't exist yet
+        $('.question, .answer').find('.js-voting-container').not('.js-post-mod-menu-init').addClass('js-post-mod-menu-init').each(f);
+    }
 }
 
 function initPostModMenuLinks() {
